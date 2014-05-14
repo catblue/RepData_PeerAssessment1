@@ -2,12 +2,39 @@
 
 
 ## Loading and preprocessing the data
-
-
+The data has been loaded directly from provided file:
+```{r}
+dt <- read.csv("activity.csv", header = TRUE)
+```
 
 ## What is mean total number of steps taken per day?
+On the histogram below, there is total
 
+```{r diagram1, fig.height=6, fig.width=6}
+stps <- tapply(dt$steps,dt$date,sum)
+hist(stps,col="blue",xlab="Steps per day", main="Total number of steps taken each day")
+abline(v=median(stps,na.rm=T),col="red", lwd=2)
+legend("topright", col="red", lwd=2, legend="mediane",bty="n")
+rug(stps)
+```
+Most of the daily totals are concentrated under the bar in between 1000 and 1500 steps/day.
 
+The histogram is slightly right skewed, but still resembling rather normal-distribution shape than a power-law one.
+
+This bulk of the data can be easier observed on the boxplot diagram below:
+
+```{r diagram2, fig.height=3, fig.width=6}
+par(mar=c(2, 2, 2, 2))
+boxplot(stps,horizontal=T,col="blue")
+```
+
+The same, more precisely can be seen in the 5-number summary:
+```{r}
+summary(stps)
+```
+The **median**, is practicaly equal to the **mean** which is = `r format(mean(stps, na.rm=T),digits=7)`
+
+There are very few (but maybe interesting to look closer at) outliers and there are 8 days rejected out of `r length(unique(dt$date))` because of missing values for these days.
 
 ## What is the average daily activity pattern?
 
