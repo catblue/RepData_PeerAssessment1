@@ -5,7 +5,7 @@
 This analysis makes use of data from a personal activity monitoring device. 
 The device collects data at 5 minute intervals through out the day. 
 
-The data consists of two months of data from an anonymous individual collected between 1-st of October and 30-th of November 2012, the number of steps taken in 5 minute intervals each day.
+The data is the number of steps taken in 5 minute intervals each day by an anonymous individual. It covers two months of data collected between 1-st of October and 30-th of November 2012.
 
 **Source of the data**: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 
@@ -17,7 +17,7 @@ The variables included in the dataset are:
 2. *date*: The date on which the measurement was taken in YYYY-MM-DD format
 3. *interval*: Identifier for the 5-minute interval in which measurement was taken
 
-The data has been loaded in R using following code:
+The data has been loaded into RStudio using following code:
 
 ```r
 dt <- read.csv("activity.csv", header = TRUE)
@@ -27,7 +27,8 @@ stps <- tapply(dt$steps, dt$date, sum)
 
 ## What is mean total number of steps taken per day?
 The **mean total number of steps taken per day** is = 10766.19,
-to answer this question a histogram was created:
+
+to answer this question a histogram has been created:
 
 
 ```r
@@ -42,9 +43,9 @@ rug(stps)
 
 
 The histogram is normal-distribution shaped and slightly right skewed.
-Bulk of the daily totals is under the bar in between 1000 and 1500 steps/day.
+Bulk of the daily totals are under the bar 1000 to 1500 steps/day.
 
-The concentration of the data can be easier observed on the boxplot diagram below:
+The concentration of the data can be also observed on the diagram below:
 
 
 ```r
@@ -55,7 +56,7 @@ boxplot(stps, horizontal = T, col = "blue")
 ![plot of chunk diagram2](figure/diagram2.png) 
 
 
-..or, more precisely in the 5-number summary:
+..and, in the 5-number summary:
 
 ```r
 summary(stps)
@@ -71,7 +72,7 @@ The **median**, is practically equal to the **mean** which is = 10766.19
 There are very few (but maybe interesting to look closer at) outliers and there were 8 days excluded from observations out of 61 because of missing values for these days.
 
 ## What is the average daily activity pattern?
-By calculating totals of of steps taken, averaged across all days the daily activity pattern of the person can be observed:
+By calculating totals of steps taken, averaged across all days the daily activity pattern of the person can be observed:
 
 
 ```r
@@ -82,6 +83,15 @@ plot(as.numeric(names(pattrns)), pattrns, col = "red", type = "l", ylab = "avg. 
 title("Average daily activity pattern")
 
 maxActivityTime <- as.integer(names(which.max(pattrns)))
+abline(v = maxActivityTime, col = "green", lwd = 2)
+legend("topright", col = "green", lwd = 2, legend = "max activity", bty = "n")
+```
+
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+
+
+```r
 sprintf("%d:%d", maxActivityTime%/%100, maxActivityTime%%100)
 ```
 
@@ -89,14 +99,8 @@ sprintf("%d:%d", maxActivityTime%/%100, maxActivityTime%%100)
 ## [1] "8:35"
 ```
 
-```r
-abline(v = maxActivityTime, col = "green", lwd = 2)
-legend("topright", col = "green", lwd = 2, legend = "max activity", bty = "n")
-```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
-
-On average, the person's activity starts about 5:30 and ceased at almost midnight, with the maximum at 8:35.
+On average, the person's activity starts about 5:30 and cease at almost midnight, with the maximum at 8:35.
 
 ## Imputing missing values
 
@@ -105,14 +109,15 @@ Actually there are 2304 of rows missing in the dataset:
 
 ```r
 nulls <- is.na(dt$steps)
-length(nulls)
+
+paste(as.character(round(100 * sum(nulls)/length(dt$steps), 2)), "%")
 ```
 
 ```
-## [1] 17568
+## [1] "13.11 %"
 ```
 
-To deal with missing values a simple strategy for filling in all of the missing values has been implemented to create the new dataset without missing values:
+To deal with missing values a simple strategy for filling in all of the missing values has been implemented and a new dataset without missing values was created:
 
 
 ```r
@@ -121,9 +126,9 @@ dtNew$steps <- ifelse(nulls, as.integer(pattrns[as.character(dt$interval)]),
     dt$steps)
 ```
 
-It replaces missing values in *steps* field at particular time-interval with  averages for this very time-interval across all days.
+That replaced missing values in *steps'* field at particular time-interval with the averages for this very same time-interval across all days.
 
-To see how it changed the distribution of values let's see the histogram for total number of steps taken each day:
+To see how it changed the distribution of *steps*, let's see the histogram of total number of steps taken each day:
 
 
 ```r
@@ -132,10 +137,10 @@ hist(stpsNew, col = "red", xlab = "Steps per day", main = "Total number of steps
 rug(stps)
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
 
 
-and comparisson of 5-number summaries for both datasets:
+and comparison of 5-number summaries for both datasets:
 
 
 ```r
@@ -157,11 +162,11 @@ summary(stpsNew)
 ```
 
 
-There is not much change in between both histograms, except that the new one is *narrower* or *steeper*, i.e. there are more measurements in the middle of the range then it was, and variance seems to have decreased. But the range and the mean/median remained almost unchanged.
+There is not much change in between both histograms, except that the new one is *narrower* or *steeper*, i.e. there are more measurements in the middle of the range then it was, and variance seemd to slightly decreased. But the range and the mean/median remained almost unchanged.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-There are interesting differences in the daily patterns of activity to be observed when looking at  different days of a week. The difference is particulary visible in between weekday days and Sundays:
+There are interesting differences in the daily patterns of activity to be observed when looking at  different days of a week. The difference is particularly visible in between weekday days and Sundays:
 
 
 ```r
@@ -192,21 +197,15 @@ legend("bottomleft", legend = "Sunday", bty = "n")
 mtext("  Comparison of day activity patterns", outer = TRUE)
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
 
-The differences in activity patterns are more prominent than in between weekend (Sat-Sun) and weekday (Mon-Fri)
-
-```r
-
-dtNew$wday[as.Date(dtNew$date) == "Saturday"] <- "weekend"
-```
-
-```
-## Error: character string is not in a standard unambiguous format
-```
+The differences in activity patterns are less prominent in between weekends (Sat-Sun) and weekday days (Mon-Fri), because of pick of activity in early hours that was preserved obviously on Saturdays.
 
 ```r
+
+dtNew$wday[weekdays(as.Date(dtNew$date)) == "Saturday"] <- "weekend"
+
 
 pattrnsW <- tapply(dtNew[dtNew$wday == "weekday", ]$steps, dtNew[dtNew$wday == 
     "weekday", ]$interval, mean)
@@ -223,7 +222,7 @@ legend("bottomleft", legend = "Sunday", bty = "n")
 mtext("  Comparison of day activity patterns", outer = TRUE)
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
 
 
 
