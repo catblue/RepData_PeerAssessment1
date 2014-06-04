@@ -2,10 +2,10 @@
 
 
 ## Loading and preprocessing the data
-This analysis makes use of data from a personal activity monitoring device. 
-The device collects data at 5 minute intervals through out the day. 
+This analysis makes use of data collected from a personal activity monitoring device. 
+The device collects data at 5 minute intervals throughout the day. 
 
-The data is the number of steps taken in 5 minute intervals each day by an anonymous individual. It covers two months of data collected between 1-st of October and 30-th of November 2012.
+The data is the number of steps walked by an anonymous individual and being recorded in 5 minute intervals each day . It covers two months of data, that was collected between the 1-st of October and 30-th of November 2012.
 
 **Source of the data**: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 
@@ -13,20 +13,33 @@ The data is the number of steps taken in 5 minute intervals each day by an anony
 
 The variables included in the dataset are:
 
-1. *steps*: Number of steps taking in a 5-minute interval (there are some missing values)
+1. *steps*: Number of steps made per 5-minute interval (there are some missing values)
 2. *date*: The date on which the measurement was taken in YYYY-MM-DD format
-3. *interval*: Identifier for the 5-minute interval in which measurement was taken
+3. *interval*: Identifier of the 5-minute interval in which measurement was recorded
 
-The data has been loaded into RStudio using following code:
+The data is being downloaded, unzipped  and loaded into R dataframe using following code:
 ```{r}
-dt <- read.csv("activity.csv", header = TRUE)
-stps <- tapply(dt$steps,dt$date,sum)
+library(utils)
+if(!file.exists("./data/activity.csv")){
+  if(!file.exists("./data")){dir.create("./data")}
+  fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip?accessType=DOWNLOAD"
+  download.file(fileUrl, destfile="./data/Factivity.zip", method="curl")
+  unzip("./data/Factivity.zip",exdir="./data")
+}
+dt <- read.csv("./data/activity.csv", header = TRUE)
+
 ```
 
-## What is mean total number of steps taken per day?
-The **mean total number of steps taken per day** is = `r format(mean(stps, na.rm=T),digits=7)`,
 
-to answer this question a histogram has been created:
+## What is mean total number of steps taken per day?
+
+The answer is: 
+```{r}
+stps <- tapply(dt$steps,dt$date,sum)
+format(mean(stps, na.rm=T),digits=7)
+```
+
+In order to asses the correctness of the computed value, a histogram of total numbers of steps per day has been created:
 
 ```{r diagram1, fig.height=6, fig.width=6}
 stps <- tapply(dt$steps,dt$date,sum)
@@ -36,26 +49,31 @@ legend("topright", col="red", lwd=2, legend="mediane=mean",bty="n")
 rug(stps)
 ```
 
-The histogram is normal-distribution shaped and slightly right skewed.
-Bulk of the daily totals are under the bar 1000 to 1500 steps/day.
 
-The concentration of the data can be also observed on the diagram below:
+Bulk of the daily totals is laying under the bar 1000 to 1500 steps/day, which supports computed value of the mean.
+
+The concentration of the data in the area 1000-1500 can be also observed in the diagram below:
 
 ```{r diagram2, fig.height=3, fig.width=6}
 par(mar=c(2, 2, 2, 2))
 boxplot(stps,horizontal=T,col="blue")
 ```
 
-..and, in the 5-number summary:
+The 5-number summary will give us also quantiles with the median, together with the mean:
+
 ```{r}
+stps <- tapply(dt$steps,dt$date,sum)
 summary(stps)
 ```
-The **median**, is practically equal to the **mean** which is = `r format(mean(stps, na.rm=T),digits=7)`
 
-There are very few (but maybe interesting to look closer at) outliers and there were 8 days excluded from observations out of `r length(unique(dt$date))` because of missing values for these days.
+So **median**, is practically equal to the **mean** of total number of steps taken per day.
+
+There are very few (but maybe interesting to look closer at) outliers.
+
+and there are 8 days excluded from observations out of `r length(unique(dt$date))` because of missing values for those days.
 
 ## What is the average daily activity pattern?
-By calculating totals of steps taken, averaged across all days the daily activity pattern of the person can be observed:
+The daily activity pattern of the person can be easily observed in the time series plot of steps taken averaged across all the days of the survey :
 
 ```{r}
 par(mfrow = c(1, 1), mar = c(4, 4, 2, 1), oma = c(2, 0, 2, 0))
@@ -77,21 +95,21 @@ On average, the person's activity starts about 5:30 and ends at almost midnight,
 ## Imputing missing values
 
 As mentioned earlier the data does not cover all of time-intervals between 12/10/01 and 12/11/30. 
-Actually there are `r format(sum(is.na(dt$steps)),digits=7)` of rows missing in the dataset:
+Actually there are `r format(sum(is.na(dt$steps)),digits=7)` of rows missing in the dataset, which constitutes more then 10% of the sample:
 ```{r}
 nulls <- is.na(dt$steps); 
 
 paste(as.character(round(100*sum(nulls)/length(dt$steps),2)),"%")
 ```
-To deal with missing values a simple strategy for filling in all of the missing values has been implemented and a new dataset without missing values was created:
+To deal with missing values a simple strategy for filling in all of the missing values was implemented and a new dataset without missing values has been created:
 
 ```{r}
 dtNew <- dt
 dtNew$steps <- ifelse(nulls, as.integer(pattrns[as.character(dt$interval)]),dt$steps )
 ```
-That replaced missing values in *steps'* field at particular time-interval with the averages for this very same time-interval across all days.
+That replaced missing values in *steps'* field of the data at particular time-interval with the averages for this very same time-interval across all days of observations.
 
-To see how it changed the distribution of *steps*, let's see the histogram of total number of steps taken each day:
+To see how it affected the distribution of *steps*, let's see the histogram:
 
 ```{r}
 stpsNew <- tapply(dtNew$steps,dtNew$date,sum)
@@ -100,14 +118,14 @@ rug(stps)
 
 ```
 
-and comparison of 5-number summaries for both datasets:
+and let's compare summaries of both of the original and  "improved" datastes:
 
 ```{r}
 summary(stps)
 summary(stpsNew)
 ```
 
-There is not much change in between both histograms, except that the new one is *narrower* or *steeper*, i.e. there are more measurements in the middle of the range then it was, and variance seemd to slightly decreased. But the range and the mean/median remained almost unchanged.
+There is not much change in between both histograms, except that the new one is *narrower* or *steeper*, i.e. there are more measurements in the middle of the range then it was, and variance seems to slightly decreased. But the range and the mean/median remained almost unchanged.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
