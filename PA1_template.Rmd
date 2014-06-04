@@ -1,6 +1,5 @@
 # Reproducible Research: Peer Assessment 1
 
-
 ## Loading and preprocessing the data
 This analysis makes use of data collected from a personal activity monitoring device. 
 The device collects data at 5 minute intervals throughout the day. 
