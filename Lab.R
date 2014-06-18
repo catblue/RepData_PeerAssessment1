@@ -184,3 +184,17 @@ mtext("  Comparison of day activity patterns", outer = TRUE)
 # Commit your PA1_template.md and PA1_template.html
 # figures included should have been placed in the figures/ 
 #knit2html()
+#====================================== try something from others... 
+stepsperdate <- aggregate(steps ~ date, data = dt, FUN = sum)
+barplot(stepsperdate$steps, names.arg = stepsperdate$date, xlab = "Date", ylab = "Steps")
+
+stps <- tapply(dt$steps,dt$date,sum)
+hist(stps,col="red",xlab="Steps per day", main="Total number of steps taken each day")
+
+
+
+si <- aggregate(steps ~ interval, data = dt, FUN = mean)
+plot(si, type = "l")
+
+pattrns <- tapply(dt$steps,dt$interval,mean, na.rm=T)
+plot(as.numeric(names(pattrns)),pattrns,col="red",type="l",ylab="avg. steps/5min",xlab="time (hhmm)",lab=c(5,10,7))
